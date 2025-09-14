@@ -14,7 +14,7 @@ const sendEmailRoute = require("./routes/sendEmailRoutes")
 const app = express();
 
 // getting localhost link to allow to share data
-app.use(cros({origin: process.env.CLIENT_URL}))
+app.use(cors({ origin: "*" }));
 
 // middleware to parse JSON
 app.use(express.json());
