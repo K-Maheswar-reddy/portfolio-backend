@@ -8,39 +8,36 @@ router.post("/", async (req, res) => {
   const { name, phone, email, reason } = req.body;
 
   try {
-    // Create transporter
     const transporter = nodemailer.createTransport({
-      host: "smtp.gmail.com",
-      port: 587,           // TLS port
-      secure: false,       // false for TLS
-      auth: {
-        user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_PASS
-      },
-      tls: {
-        rejectUnauthorized: false
-      }
+        host: "smtp.gmail.com",
+        port: 587,
+        secure: false, // use TLS
+        auth: {
+          user: process.env.GMAIL_USER,
+          pass: process.env.GMAIL_PASS
+        },
+        tls: {
+          rejectUnauthorized: false
+        }
     });
 
     // Verify SMTP connection
-    await transporter.verify();
-    console.log("✅ SMTP server is ready to send emails");
-
-    // Send email
-    const info = await transporter.sendMail({
-      from: `"Portfolio Contact" <${process.env.GMAIL_USER}>`,
-      to: process.env.GMAIL_USER, // you can also send to multiple emails as array
-      subject: "New Contact Form Submission",
-      text: `Name: ${name}\nPhone: ${phone}\nEmail: ${email}\nReason: ${reason}`
+    transporter.verify((err, success) => {
+      if (err) console.log("SMTP connection error:", err);
+      else console.log("SMTP server ready");
     });
 
-    console.log("📧 Email sent:", info.messageId);
-    res.status(200).json({ success: true, message: "Email sent successfully" });
+    await transporter.sendMail({
+      from: `"Portfolio Contact" <${process.env.GMAIL_USER}>`, 
+      to: process.env.GMAIL_USER,
+      subject: "New Contact Form Submission",
+      text: `Name: ${name}\nPhone: ${phone}\nEmail: ${email}\nReason: ${reason}`,
+    });
 
+    res.status(200).json({ success: true, message: "Email sent successfully" });
   } catch (error) {
-    // Detailed logging for debugging
-    console.error("❌ Email sending failed:", error);
-    res.status(500).json({ success: false, message: "Failed to send email", error: error.message });
+    console.error("Email error:", error.message);
+    res.status(500).json({ success: false, message: "Failed to send email" });
   }
 });
 
