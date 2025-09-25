@@ -9,7 +9,9 @@ router.post("/", async (req, res) => {
 
   try {
     const transporter = nodemailer.createTransport({
-      service: "gmail",
+      host: "smtp.gmail.com",   // Gmail's SMTP server
+      port: 465,                // secure port
+      secure: true,             // use SSL
       auth: {
         user: process.env.GMAIL_USER,
         pass: process.env.GMAIL_PASS 
