@@ -21,6 +21,12 @@ router.post("/", async (req, res) => {
         }
     });
 
+    // Verify SMTP connection
+    transporter.verify((err, success) => {
+      if (err) console.log("SMTP connection error:", err);
+      else console.log("SMTP server ready");
+    });
+
     await transporter.sendMail({
       from: `"Portfolio Contact" <${process.env.GMAIL_USER}>`, 
       to: process.env.GMAIL_USER,
