@@ -1,51 +1,35 @@
-// backend/routes/sendEmail.js
 const express = require("express");
 const router = express.Router();
-const Mailjet = require("node-mailjet");
+const SibApiV3Sdk = require("sib-api-v3-sdk");
 
 router.post("/", async (req, res) => {
   const { name, phone, email, reason } = req.body;
 
   try {
-    const mailjet = Mailjet.apiConnect(
-      process.env.MAILJET_API_KEY,
-      process.env.MAILJET_SECRET_KEY
-    );
+    const client = SibApiV3Sdk.ApiClient.instance;
+    client.authentications['api-key'].apiKey = process.env.SENDINBLUE_API_KEY;
 
-    const request = await mailjet
-      .post("send", { version: "v3.1" })
-      .request({
-        Messages: [
-          {
-            From: {
-              Email: process.env.MAILJET_FROM, // your verified sender
-              Name: "Portfolio Contact"
-            },
-            To: [
-              { Email: process.env.MAILJET_TO } // your inbox
-            ],
-            Subject: "New Contact Form Submission",
-            TextPart: `Name: ${name}\nPhone: ${phone}\nEmail: ${email}\nReason: ${reason}`,
-            HTMLPart: `
-              <h2>New Contact Form Submission</h2>
-              <p><b>Name:</b> ${name}</p>
-              <p><b>Phone:</b> ${phone}</p>
-              <p><b>Email:</b> ${email}</p>
-              <p><b>Reason:</b> ${reason}</p>
-            `,
-            ReplyTo: {
-              Email: email,
-              Name: name
-            }
-          }
-        ]
-      });
+    const tranEmailApi = new SibApiV3Sdk.TransactionalEmailsApi();
 
-    console.log("📧 Email sent:", request.body);
+    await tranEmailApi.sendTransacEmail({
+      sender: { email: process.env.SENDINBLUE_FROM, name: "Portfolio Contact" },
+      to: [{ email: process.env.SENDINBLUE_TO }],
+      subject: "New Contact Form Submission",
+      textContent: `Name: ${name}\nPhone: ${phone}\nEmail: ${email}\nReason: ${reason}`,
+      htmlContent: `
+        <h2>New Contact Form Submission</h2>
+        <p><b>Name:</b> ${name}</p>
+        <p><b>Phone:</b> ${phone}</p>
+        <p><b>Email:</b> ${email}</p>
+        <p><b>Reason:</b> ${reason}</p>
+      `,
+      replyTo: { email, name }
+    });
+
     res.status(200).json({ success: true, message: "Email sent successfully" });
   } catch (error) {
-    console.error("Email error:", error.response?.body || error.message);
-    res.status(500).json({ success: false, message: "Failed to send email", error: error.message });
+    console.error("Email error:", error.response || error.message);
+    res.status(500).json({ success: false, message: "Failed to send email" });
   }
 });
 
