@@ -1,43 +1,51 @@
 // backend/routes/sendEmail.js
 const express = require("express");
 const router = express.Router();
-const nodemailer = require("nodemailer");
+const Mailjet = require("node-mailjet");
 
-// POST route
 router.post("/", async (req, res) => {
   const { name, phone, email, reason } = req.body;
 
   try {
-    // Create transporter with Mailjet SMTP
-    const transporter = nodemailer.createTransport({
-      host: "in-v3.mailjet.com",  // Mailjet SMTP host
-      port: 587,                  // TLS port
-      secure: false,              // use TLS, not SSL
-      auth: {
-        user: process.env.MAILJET_API_KEY,    // Mailjet API Key (public)
-        pass: process.env.MAILJET_SECRET_KEY  // Mailjet Secret Key (private)
-      }
-    });
+    const mailjet = Mailjet.apiConnect(
+      process.env.MAILJET_API_KEY,
+      process.env.MAILJET_SECRET_KEY
+    );
 
-    // Verify connection
-    transporter.verify((err, success) => {
-      if (err) console.log("SMTP connection error:", err);
-      else console.log("Mailjet SMTP server ready");
-    });
+    const request = await mailjet
+      .post("send", { version: "v3.1" })
+      .request({
+        Messages: [
+          {
+            From: {
+              Email: process.env.MAILJET_FROM, // your verified sender
+              Name: "Portfolio Contact"
+            },
+            To: [
+              { Email: process.env.MAILJET_TO } // your inbox
+            ],
+            Subject: "New Contact Form Submission",
+            TextPart: `Name: ${name}\nPhone: ${phone}\nEmail: ${email}\nReason: ${reason}`,
+            HTMLPart: `
+              <h2>New Contact Form Submission</h2>
+              <p><b>Name:</b> ${name}</p>
+              <p><b>Phone:</b> ${phone}</p>
+              <p><b>Email:</b> ${email}</p>
+              <p><b>Reason:</b> ${reason}</p>
+            `,
+            ReplyTo: {
+              Email: email,
+              Name: name
+            }
+          }
+        ]
+      });
 
-    // Send email
-    await transporter.sendMail({
-      from: `"Portfolio Contact" <${process.env.MAILJET_FROM}>`, // your verified Mailjet email
-      to: process.env.MAILJET_TO,  // where you want to receive submissions
-      subject: "New Contact Form Submission",
-      text: `Name: ${name}\nPhone: ${phone}\nEmail: ${email}\nReason: ${reason}`,
-      replyTo: email // 👈 so you can reply directly to the visitor
-    });
-
+    console.log("📧 Email sent:", request.body);
     res.status(200).json({ success: true, message: "Email sent successfully" });
   } catch (error) {
-    console.error("Email error:", error.message);
-    res.status(500).json({ success: false, message: "Failed to send email" });
+    console.error("Email error:", error.response?.body || error.message);
+    res.status(500).json({ success: false, message: "Failed to send email", error: error.message });
   }
 });
 
