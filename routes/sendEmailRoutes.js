@@ -8,30 +8,30 @@ router.post("/", async (req, res) => {
   const { name, phone, email, reason } = req.body;
 
   try {
+    // Create transporter with Mailjet SMTP
     const transporter = nodemailer.createTransport({
-        host: "smtp.gmail.com",
-        port: 587,
-        secure: false, // use TLS
-        auth: {
-          user: process.env.GMAIL_USER,
-          pass: process.env.GMAIL_PASS
-        },
-        tls: {
-          rejectUnauthorized: false
-        }
+      host: "in-v3.mailjet.com",  // Mailjet SMTP host
+      port: 587,                  // TLS port
+      secure: false,              // use TLS, not SSL
+      auth: {
+        user: process.env.MAILJET_API_KEY,    // Mailjet API Key (public)
+        pass: process.env.MAILJET_SECRET_KEY  // Mailjet Secret Key (private)
+      }
     });
 
-    // Verify SMTP connection
+    // Verify connection
     transporter.verify((err, success) => {
       if (err) console.log("SMTP connection error:", err);
-      else console.log("SMTP server ready");
+      else console.log("Mailjet SMTP server ready");
     });
 
+    // Send email
     await transporter.sendMail({
-      from: `"Portfolio Contact" <${process.env.GMAIL_USER}>`, 
-      to: process.env.GMAIL_USER,
+      from: `"Portfolio Contact" <${process.env.MAILJET_FROM}>`, // your verified Mailjet email
+      to: process.env.MAILJET_TO,  // where you want to receive submissions
       subject: "New Contact Form Submission",
       text: `Name: ${name}\nPhone: ${phone}\nEmail: ${email}\nReason: ${reason}`,
+      replyTo: email // 👈 so you can reply directly to the visitor
     });
 
     res.status(200).json({ success: true, message: "Email sent successfully" });
