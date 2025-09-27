@@ -1,11 +1,11 @@
- // module.exports = router;
+// module.exports = router;
 const express = require("express");
 const router = express.Router();
 const brevo = require("@getbrevo/brevo");
 
 router.post("/", async (req, res) => {
   try {
-    const { name, email, phone, message } = req.body;
+    const { name, email, phone, reason } = req.body;
 
     // Initialize Brevo API
     let apiInstance = new brevo.TransactionalEmailsApi();
@@ -18,10 +18,11 @@ router.post("/", async (req, res) => {
     sendSmtpEmail.to = [{ email: process.env.BREVO_TO }];        // Recipient from env
     sendSmtpEmail.subject = "New Contact Form Submission";
     sendSmtpEmail.htmlContent = `
-      <h3>New message from ${name}</h3>
+      <h2>New message from</h2>
+      <h3>${name}</h3>
       <p><b>Email:</b> ${email}</p>
       <p><b>Phone:</b> ${phone}</p>
-      <p><b>Message:</b> ${message}</p>
+      <p><b>Message:</b> ${reason}</p>
     `;
 
     // Send email
