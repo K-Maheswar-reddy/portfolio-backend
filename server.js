@@ -13,17 +13,17 @@ const sendEmailRoute = require("./routes/sendEmailRoutes");
 
 const app = express();
 
-// ✅ CORS setup
+// CORS setup
 app.use(cors({
   origin: process.env.CLIENT_URL,  // your Vercel frontend
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
-// ✅ Middleware to parse JSON
+// Middleware to parse JSON
 app.use(express.json());
 
-// ✅ Routes
+// Routes
 app.use('/profile', profileRoute);
 app.use("/skills", skillRoute);
 app.use("/certifications", certificationRoute);
@@ -31,23 +31,23 @@ app.use("/experience", experienceRoute);
 app.use("/education", educationRoute);
 app.use("/send-email", sendEmailRoute);
 
-// ✅ Connect to MongoDB
+// Connect to MongoDB
 const url = process.env.MONGO_URI;
 const connectDB = async () => {
   try {
     await mongoose.connect(url);
-    console.log("✅ Database is connected");
+    console.log("Database is connected");
   } catch (err) {
-    console.error("❌ Error in connecting to database: " + err);
+    console.error("Error in connecting to database: " + err);
     process.exit(1);
   }
 };
 
-// ✅ Start server after DB connects
+// Start server after DB connects
 const PORT = process.env.PORT || 3000;
 connectDB().then(() => {
   app.listen(PORT, () => {
-    console.log(`🚀 Server is running at port ${PORT}`);
+    console.log(`Server is running at port ${PORT}`);
   });
 });
 
