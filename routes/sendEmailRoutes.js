@@ -2,23 +2,26 @@ const express = require("express");
 const router = express.Router();
 const nodemailer = require("nodemailer");
 
-// Gmail transporter using App Password
+// Gmail transporter using App Password and SSL
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.gmail.com",
+  port: 465,          // SSL port
+  secure: true,       // must be true for port 465
   auth: {
     user: process.env.GMAIL_USER, // your Gmail address
-    pass: process.env.GMAIL_PASS  // your 16-char Google App Password
+    pass: process.env.GMAIL_PASS  // your 16-char App Password
   }
 });
 
+// POST route for contact form
 router.post("/", async (req, res) => {
   try {
-    const { name, email, phone, message } = req.body; // 👈 added phone here
+    const { name, email, phone, message } = req.body;
 
     // Build the email
     const mailOptions = {
       from: `"Portfolio Contact Form" <${process.env.GMAIL_USER}>`,
-      to: process.env.GMAIL_USER, // your inbox
+      to: process.env.GMAIL_TO,       // your inbox
       subject: "New Contact Form Submission",
       text: `Name: ${name}\nEmail: ${email}\nPhone: ${phone}\nMessage: ${message}`,
       html: `
