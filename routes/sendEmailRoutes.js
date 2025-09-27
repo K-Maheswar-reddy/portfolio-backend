@@ -2,14 +2,11 @@ const express = require("express");
 const router = express.Router();
 const nodemailer = require("nodemailer");
 
-// Create transporter for Elastic Email SMTP
 const transporter = nodemailer.createTransport({
-  host: "smtp.elasticemail.com", // Elastic Email SMTP host
-  port: 2525,                    // or 587 (TLS) / 465 (SSL)
-  secure: false,                 // true if port = 465
+  service: "gmail",
   auth: {
-    user: process.env.ELASTIC_EMAIL_USER, // Elastic Email username
-    pass: process.env.ELASTIC_EMAIL_PASS  // Elastic Email password
+    user: process.env.GMAIL_USER, // your Gmail address
+    pass: process.env.GMAIL_PASS // the 16-char App Password
   }
 });
 
