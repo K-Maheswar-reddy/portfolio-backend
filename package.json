@@ -15,9 +15,6 @@
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
     "mongoose": "^8.17.1",
-    "node-mailjet": "^6.0.9",
-    "nodemailer": "^7.0.6",
-    "nodemon": "^3.1.10",
-    "sib-api-v3-sdk": "^8.5.0"
+    "nodemon": "^3.1.10"
   }
 }
