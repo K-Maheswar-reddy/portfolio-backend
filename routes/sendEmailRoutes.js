@@ -49,25 +49,21 @@
 
 // module.exports = router;
 
-const express = require("express");
-const router = express.Router();
-const SibApiV3Sdk = require("sib-api-v3-sdk");
+const brevo = require("@getbrevo/brevo");
 
-// 🔑 Configure Brevo client with API key from Render env
-const brevoClient = SibApiV3Sdk.ApiClient.instance;
-brevoClient.authentications["api-key"].apiKey = process.env.BREVO_API_KEY;
-
-const tranEmailApi = new SibApiV3Sdk.TransactionalEmailsApi();
-
-// POST route for contact form
 router.post("/", async (req, res) => {
   try {
     const { name, email, phone, message } = req.body;
 
-    // ✉️ Build the email
-    const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
-    sendSmtpEmail.sender = { email: process.env.BREVO_SENDER, name: "Portfolio Contact Form" };
-    sendSmtpEmail.to = [{ email: process.env.BREVO_TO }];
+    let apiInstance = new brevo.TransactionalEmailsApi();
+    let apiKey = apiInstance.authentications['apiKey'];
+    
+    // 🔴 Hardcode API key here just for testing
+    apiKey.apiKey = "xkeysib-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";  
+
+    const sendSmtpEmail = new brevo.SendSmtpEmail();
+    sendSmtpEmail.sender = { email: "your_verified@gmail.com" }; // must be verified sender
+    sendSmtpEmail.to = [{ email: "your_receiver@gmail.com" }];
     sendSmtpEmail.subject = "New Contact Form Submission";
     sendSmtpEmail.htmlContent = `
       <h3>New message from ${name}</h3>
@@ -76,19 +72,20 @@ router.post("/", async (req, res) => {
       <p><b>Message:</b> ${message}</p>
     `;
 
-    // 🚀 Send via Brevo API
-    await tranEmailApi.sendTransacEmail(sendSmtpEmail);
-
-    console.log("✅ Email sent via Brevo");
+    const data = await apiInstance.sendTransacEmail(sendSmtpEmail);
+    console.log("✅ Email sent:", data);
     res.status(200).json({ success: true, message: "Email sent successfully" });
+
   } catch (err) {
-    console.error("❌ Brevo error:", err.message || err);
+    console.error("❌ Brevo error:", err.response?.body || err.message || err);
     res.status(500).json({
       success: false,
       message: "Failed to send email",
-      error: err.message || err
+      error: err.response?.body?.message || err.message || err
     });
   }
+});
+
 });
 
 module.exports = router;
