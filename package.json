@@ -15,6 +15,6 @@
     "express": "^5.1.0",
     "mongoose": "^8.17.1",
     "nodemon": "^3.1.10",
-    "sib-api-v3-sdk": "^8.5.0"
+    "node-mailjet": "^6.0.9"
   }
 }
